@@ -48,7 +48,8 @@ class SecurityServiceTest {
 
     @Test
     void pendingAlarm_whenSensorActivated_thenAlarmTriggered() {
-        door.setActive(true);
+        Sensor door = new Sensor("door", SensorType.DOOR);
+        door.setActive(false);
         when(repository.getAlarmStatus()).thenReturn(AlarmStatus.PENDING_ALARM);
         when(repository.getSensors()).thenReturn(Set.of(door));
         securityService.changeSensorActivationStatus(door, true);
@@ -159,13 +160,14 @@ class SecurityServiceTest {
 
     @Test
     void detectCatThenNoCatAndNoSensors_thenClearAlarm() {
+        when(repository.getArmingStatus()).thenReturn(ArmingStatus.ARMED_HOME);
         when(repository.getSensors()).thenReturn(Set.of());
-        when(imageService.imageContainsCat(any(), anyFloat())).thenReturn(true).thenReturn(false);
-
+        when(imageService.imageContainsCat(any(), anyFloat()))
+                .thenReturn(true)
+                .thenReturn(false);
         BufferedImage image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
         securityService.processImage(image);
         securityService.processImage(image);
-
         verify(repository).setAlarmStatus(AlarmStatus.ALARM);
         verify(repository).setAlarmStatus(AlarmStatus.NO_ALARM);
     }
